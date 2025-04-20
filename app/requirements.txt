@@ -1,0 +1,10 @@
+Flask
+Flask-SocketIO
+scikit-learn
+numpy
+pandas
+python-dotenv
+requests
+Werkzeug
+Flask-Cors
+eventlet
