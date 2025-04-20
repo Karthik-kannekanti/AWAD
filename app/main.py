@@ -79,12 +79,16 @@ def get_stats_data():
     }
 
 @app.route('/')
-def dashboard():
-    return render_template('dashboard.html')
+def home_redirect():
+    return redirect(url_for('analytics_page'))
 
 @app.route('/waf-analytics')
 def analytics_page():
     return render_template('analytics.html', target_website=TARGET_WEBSITE)
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
 
 @app.route('/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'])
 def proxy(path):
