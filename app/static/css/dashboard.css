@@ -1,0 +1,267 @@
+/* Dashboard Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.navbar-brand {
+    font-weight: 700;
+}
+
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    border: none;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    font-weight: 600;
+    padding: 15px 20px;
+}
+
+/* Stats Cards */
+.stats-card {
+    text-align: center;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stats-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    transition: all 0.5s ease-in-out;
+}
+
+.stats-value.updated {
+    animation: pulse-value 1s ease-in-out;
+}
+
+.stats-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+/* Chart Containers */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin: 10px 0;
+}
+
+.chart-container canvas {
+    transition: all 0.5s ease-in-out;
+}
+
+/* Table Styles */
+.table-responsive {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    border-top: none;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Pagination */
+.pagination {
+    margin-bottom: 0;
+}
+
+.page-link {
+    border-radius: 5px;
+    margin: 0 2px;
+}
+
+/* Log Details */
+.log-details {
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-size: 0.9rem;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 10px;
+    border: 1px solid #dee2e6;
+}
+
+/* Badge Styles */
+.badge-attack {
+    font-size: 0.8rem;
+    padding: 5px 8px;
+    border-radius: 5px;
+}
+
+/* Filter Card */
+.filter-card {
+    padding: 20px;
+}
+
+/* Top Lists */
+.list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+}
+
+.list-group-item-count {
+    background-color: #f8f9fa;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+/* Status Indicators */
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.status-blocked {
+    background-color: #dc3545;
+}
+
+.status-allowed {
+    background-color: #198754;
+}
+
+.status-anomaly {
+    background-color: #ffc107;
+}
+
+/* Real-time updates */
+.new-log-highlight {
+    animation: highlight-row 3s ease-in-out;
+}
+
+@keyframes highlight-row {
+    0% {
+        background-color: rgba(13, 110, 253, 0.2);
+    }
+    70% {
+        background-color: rgba(13, 110, 253, 0.2);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+@keyframes pulse-value {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+        color: #0d6efd;
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes slide-in {
+    0% {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Recent attacks animation */
+.recent-attack-item {
+    animation: slide-in 0.5s ease-in-out;
+}
+
+/* Toast notifications */
+.toast {
+    opacity: 1 !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+}
+
+/* Connection status */
+.connection-status {
+    margin-left: 15px;
+}
+
+/* Auto-refresh toggle */
+.auto-refresh-container {
+    display: flex;
+    align-items: center;
+    margin-left: 15px;
+}
+
+.auto-refresh-container label {
+    margin-right: 8px;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.form-switch {
+    padding-left: 2.5em;
+}
+
+/* Recent attacks list */
+.recent-attacks-card {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .stats-value {
+        font-size: 2rem;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+    
+    .card-header {
+        padding: 12px 15px;
+    }
+    
+    .filter-card {
+        padding: 15px;
+    }
+}

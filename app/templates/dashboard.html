@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAF Dashboard</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar-brand {
+            font-weight: 700;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+            font-weight: 600;
+        }
+        .stats-card {
+            text-align: center;
+            padding: 15px;
+        }
+        .stats-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .stats-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        .table-responsive {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .pagination {
+            margin-bottom: 0;
+        }
+        .log-details {
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 0.9rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .badge-attack {
+            font-size: 0.8rem;
+        }
+        .filter-card {
+            padding: 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-shield-alt me-2"></i>Autonomous WAF Dashboard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Main Application</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/api/export-logs" target="_blank">Export Logs</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <div class="connection-status" id="connection-status">
+                        <span class="badge bg-secondary">Connecting...</span>
+                    </div>
+                    <div class="auto-refresh-container">
+                        <label for="auto-refresh" class="form-check-label">Auto-refresh</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="auto-refresh" checked>
+                        </div>
+                    </div>
+                    <span class="navbar-text ms-3">
+                        <i class="fas fa-clock me-1"></i> <span id="current-time"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <!-- Stats Row -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <div class="stats-value text-primary" id="total-requests">0</div>
+                        <div class="stats-label">Total Requests</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <div class="stats-value text-danger" id="blocked-requests">0</div>
+                        <div class="stats-label">Blocked Requests</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <div class="stats-value text-warning" id="anomalous-requests">0</div>
+                        <div class="stats-label">Anomalous Requests</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <div class="stats-value text-info" id="attack-types-count">0</div>
+                        <div class="stats-label">Attack Types Detected</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attack Types and Top Data Row -->
+        <div class="row mb-4">
+            <!-- Attack Types Chart -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-pie me-2"></i>Attack Types Distribution
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="attack-types-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Top IPs -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-user-shield me-2"></i>Top Source IPs
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush" id="top-ips-list">
+                            <li class="list-group-item text-center text-muted">No data available</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Top Paths -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-link me-2"></i>Top Requested Paths
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush" id="top-paths-list">
+                            <li class="list-group-item text-center text-muted">No data available</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts and Recent Attacks Row -->
+        <div class="row mb-4">
+            <!-- Time Series Chart -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Traffic Over Time</span>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary active" id="time-1h">1h</button>
+                            <button type="button" class="btn btn-outline-primary" id="time-24h">24h</button>
+                            <button type="button" class="btn btn-outline-primary" id="time-7d">7d</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="time-series-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Attacks -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Recent Attacks</span>
+                        <span class="badge bg-danger" id="attack-success-rate">0%</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush recent-attacks-card" id="recent-attacks-list">
+                            <li class="list-group-item text-center text-muted">No recent attacks</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Logs Row -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card filter-card">
+                    <h5 class="mb-3">Filters</h5>
+                    <div class="mb-3">
+                        <label for="attack-type-filter" class="form-label">Attack Type</label>
+                        <select class="form-select" id="attack-type-filter">
+                            <option value="all">All</option>
+                            <option value="sql_injection">SQL Injection</option>
+                            <option value="xss">XSS</option>
+                            <option value="path_traversal">Path Traversal</option>
+                            <option value="command_injection">Command Injection</option>
+                            <option value="lfi">LFI</option>
+                            <option value="none">None</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="status-filter" class="form-label">Status</label>
+                        <select class="form-select" id="status-filter">
+                            <option value="all">All</option>
+                            <option value="blocked">Blocked</option>
+                            <option value="allowed">Allowed</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="anomaly-filter" class="form-label">Anomaly</label>
+                        <select class="form-select" id="anomaly-filter">
+                            <option value="all">All</option>
+                            <option value="true">Anomalous</option>
+                            <option value="false">Normal</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="search-filter" class="form-label">Search</label>
+                        <input type="text" class="form-control" id="search-filter" placeholder="IP, path, payload...">
+                    </div>
+                    <button class="btn btn-primary w-100" id="apply-filters">
+                        <i class="fas fa-filter me-2"></i>Apply Filters
+                    </button>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <i class="fas fa-chart-bar me-2"></i>Top IPs
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush" id="top-ips">
+                            <!-- Top IPs will be added here -->
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <i class="fas fa-link me-2"></i>Top Paths
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush" id="top-paths">
+                            <!-- Top paths will be added here -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-9">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-list me-2"></i>Request Logs
+                        </div>
+                        <div>
+                            <span class="badge bg-primary" id="logs-count">0</span> logs found
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>IP</th>
+                                        <th>Method</th>
+                                        <th>Path</th>
+                                        <th>Status</th>
+                                        <th>Attack Type</th>
+                                        <th>Anomaly</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logs-table-body">
+                                    <!-- Logs will be dynamically added here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <nav aria-label="Logs pagination">
+                            <ul class="pagination justify-content-center" id="logs-pagination">
+                                <!-- Pagination will be dynamically added here -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Log Details Modal -->
+    <div class="modal fade" id="logDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Log Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>ID:</strong> <span id="modal-id"></span></p>
+                            <p><strong>Time:</strong> <span id="modal-time"></span></p>
+                            <p><strong>IP:</strong> <span id="modal-ip"></span></p>
+                            <p><strong>Method:</strong> <span id="modal-method"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Path:</strong> <span id="modal-path"></span></p>
+                            <p><strong>Status:</strong> <span id="modal-status"></span></p>
+                            <p><strong>Attack Type:</strong> <span id="modal-attack-type"></span></p>
+                            <p><strong>Anomaly:</strong> <span id="modal-anomaly"></span></p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>User Agent</h6>
+                            <div class="log-details" id="modal-user-agent"></div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Payload</h6>
+                            <div class="log-details" id="modal-payload"></div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Feedback</h6>
+                            <div class="btn-group" role="group" id="feedback-buttons">
+                                <button type="button" class="btn btn-outline-danger" id="mark-as-attack">
+                                    <i class="fas fa-bug me-2"></i>Mark as Attack
+                                </button>
+                                <button type="button" class="btn btn-outline-success" id="mark-as-legitimate">
+                                    <i class="fas fa-check me-2"></i>Mark as Legitimate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+/* Floating Toolbox Styles */
+.toolbox {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 400px;
+    height: 500px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    resize: both;
+    min-width: 300px;
+    min-height: 300px;
+    max-width: 800px;
+    max-height: 800px;
+}
+
+.toolbox.minimized {
+    height: 40px !important;
+    overflow: hidden;
+}
+
+.toolbox.expanded {
+    width: 80% !important;
+    height: 80% !important;
+    top: 10% !important;
+    right: 10% !important;
+}
+
+.toolbox-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+}
+
+.toolbox-header h5 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.toolbox-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.toolbox-body {
+    flex: 1;
+    overflow: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.toolbox-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    padding: 8px 15px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+/* Tab Content Styles */
+.tab-content {
+    flex: 1;
+    overflow: auto;
+}
+
+.tab-pane {
+    height: 100%;
+    overflow: auto;
+}
+
+/* Stats Tab Styles */
+.stats-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-card {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.chart-container {
+    flex: 1;
+    margin: 15px 0;
+    position: relative;
+    min-height: 150px;
+}
+
+.dashboard-link {
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* Attack Simulation Tab Styles */
+.attack-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.attack-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.attack-btn {
+    flex: 1;
+    min-width: 100px;
+}
+
+.custom-attack {
+    margin-bottom: 15px;
+}
+
+.attack-result {
+    flex: 1;
+    overflow: auto;
+}
+
+/* Logs Tab Styles */
+.logs-container {
+    height: 100%;
+    overflow: auto;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    z-index: 1;
+}
+
+/* Hide the toolbox by default */
+#toolbox {
+    display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .toolbox {
+        width: 90%;
+        height: 70%;
+        top: 15%;
+        right: 5%;
+    }
+    
+    .toolbox.expanded {
+        width: 95% !important;
+        height: 90% !important;
+        top: 5% !important;
+        right: 2.5% !important;
+    }
+    
+    .attack-buttons {
+        flex-direction: column;
+    }
+}
